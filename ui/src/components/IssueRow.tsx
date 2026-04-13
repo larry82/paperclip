@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
 import type { Issue } from "@paperclipai/shared";
 import { Link } from "@/lib/router";
+import { Calendar } from "lucide-react";
 import { cn } from "../lib/utils";
+import { formatIssueDeadline } from "../lib/issue-deadlines";
 import { PriorityIcon } from "./PriorityIcon";
 import { StatusIcon } from "./StatusIcon";
 
@@ -38,6 +40,7 @@ export function IssueRow({
   const identifier = issue.identifier ?? issue.id.slice(0, 8);
   const showUnreadSlot = unreadState !== null;
   const showUnreadDot = unreadState === "visible" || unreadState === "fading";
+  const deadlineLabel = issue.deadline ? formatIssueDeadline(issue.deadline) : null;
 
   return (
     <Link
@@ -52,8 +55,14 @@ export function IssueRow({
         {mobileLeading ?? <StatusIcon status={issue.status} />}
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-1 sm:contents">
-        <span className="line-clamp-2 text-sm sm:order-2 sm:min-w-0 sm:flex-1 sm:truncate sm:line-clamp-none">
-          {issue.title}
+        <span className="line-clamp-2 text-sm sm:order-2 sm:min-w-0 sm:flex sm:flex-1 sm:items-center sm:gap-2 sm:truncate sm:line-clamp-none">
+          <span className="truncate">{issue.title}</span>
+          {deadlineLabel ? (
+            <span className="inline-flex items-center gap-1 rounded-full border border-border/70 px-1.5 py-0.5 text-[11px] text-muted-foreground sm:shrink-0">
+              <Calendar className="h-3 w-3" />
+              {deadlineLabel}
+            </span>
+          ) : null}
         </span>
         <span className="flex items-center gap-2 sm:order-1 sm:shrink-0">
           {desktopLeadingSpacer ? (
