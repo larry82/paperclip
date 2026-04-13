@@ -34,6 +34,7 @@ export const createIssueSchema = z.object({
   parentId: z.string().uuid().optional().nullable(),
   title: z.string().min(1),
   description: z.string().optional().nullable(),
+  deadline: z.string().optional().nullable(),
   status: z.enum(ISSUE_STATUSES).optional().default("backlog"),
   priority: z.enum(ISSUE_PRIORITIES).optional().default("medium"),
   assigneeAgentId: z.string().uuid().optional().nullable(),

@@ -9,6 +9,7 @@ import { formatAssigneeUserLabel } from "../lib/assignees";
 import { groupBy } from "../lib/groupBy";
 import { formatDate, cn } from "../lib/utils";
 import { timeAgo } from "../lib/timeAgo";
+import { compareIssueDeadlines } from "../lib/issue-deadlines";
 import { StatusIcon } from "./StatusIcon";
 import { PriorityIcon } from "./PriorityIcon";
 import { EmptyState } from "./EmptyState";
@@ -41,7 +42,7 @@ export type IssueViewState = {
   assignees: string[];
   labels: string[];
   projects: string[];
-  sortField: "status" | "priority" | "title" | "created" | "updated";
+  sortField: "status" | "priority" | "title" | "created" | "updated" | "deadline";
   sortDir: "asc" | "desc";
   groupBy: "status" | "priority" | "assignee" | "none";
   viewMode: "list" | "board";
@@ -110,7 +111,7 @@ function applyFilters(issues: Issue[], state: IssueViewState, currentUserId?: st
   return result;
 }
 
-function sortIssues(issues: Issue[], state: IssueViewState): Issue[] {
+export function sortIssues(issues: Issue[], state: IssueViewState): Issue[] {
   const sorted = [...issues];
   const dir = state.sortDir === "asc" ? 1 : -1;
   sorted.sort((a, b) => {
@@ -125,6 +126,8 @@ function sortIssues(issues: Issue[], state: IssueViewState): Issue[] {
         return dir * (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
       case "updated":
         return dir * (new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime());
+      case "deadline":
+        return compareIssueDeadlines(a, b, state.sortDir);
       default:
         return 0;
     }
@@ -546,6 +549,7 @@ export function IssuesList({
                     ["title", "Title"],
                     ["created", "Created"],
                     ["updated", "Updated"],
+                    ["deadline", "Deadline"],
                   ] as const).map(([field, label]) => (
                     <button
                       key={field}

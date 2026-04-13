@@ -20,7 +20,7 @@ import { formatDate, cn, projectUrl } from "../lib/utils";
 import { timeAgo } from "../lib/timeAgo";
 import { Separator } from "@/components/ui/separator";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { User, Hexagon, ArrowUpRight, Tag, Plus, Trash2, Copy, Check } from "lucide-react";
+import { User, Hexagon, ArrowUpRight, Tag, Plus, Trash2, Copy, Check, Calendar } from "lucide-react";
 import { AgentIcon } from "./AgentIconPicker";
 
 const EXECUTION_WORKSPACE_OPTIONS = [
@@ -603,6 +603,28 @@ export function IssueProperties({ issue, onUpdate, inline }: IssuePropertiesProp
             onChange={(priority) => onUpdate({ priority })}
             showLabel
           />
+        </PropertyRow>
+
+        <PropertyRow label="Deadline">
+          <div className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs">
+            <Calendar className="h-3 w-3 text-muted-foreground" />
+            <input
+              type="date"
+              className="w-32 bg-transparent text-sm outline-none"
+              value={issue.deadline ?? ""}
+              onChange={(event) => onUpdate({ deadline: event.target.value || null })}
+              aria-label="Issue deadline"
+            />
+            {issue.deadline ? (
+              <button
+                type="button"
+                className="text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+                onClick={() => onUpdate({ deadline: null })}
+              >
+                Clear
+              </button>
+            ) : null}
+          </div>
         </PropertyRow>
 
         <PropertyPicker

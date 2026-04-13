@@ -71,6 +71,7 @@ interface IssueDraft {
   description: string;
   status: string;
   priority: string;
+  deadline: string;
   assigneeValue: string;
   assigneeId?: string;
   projectId: string;
@@ -284,6 +285,7 @@ export function NewIssueDialog() {
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("todo");
   const [priority, setPriority] = useState("");
+  const [deadline, setDeadline] = useState("");
   const [assigneeValue, setAssigneeValue] = useState("");
   const [projectId, setProjectId] = useState("");
   const [projectWorkspaceId, setProjectWorkspaceId] = useState("");
@@ -478,6 +480,7 @@ export function NewIssueDialog() {
       description,
       status,
       priority,
+      deadline,
       assigneeValue,
       projectId,
       projectWorkspaceId,
@@ -492,6 +495,7 @@ export function NewIssueDialog() {
     description,
     status,
     priority,
+    deadline,
     assigneeValue,
     projectId,
     projectWorkspaceId,
@@ -511,11 +515,34 @@ export function NewIssueDialog() {
     executionWorkspaceDefaultProjectId.current = null;
 
     const draft = loadDraft();
-    if (newIssueDefaults.title) {
+    if (newIssueDefaults.parentId) {
+      const defaultProjectId = newIssueDefaults.projectId ?? "";
+      const defaultProject = orderedProjects.find((project) => project.id === defaultProjectId);
+      const defaultProjectWorkspaceId = newIssueDefaults.projectWorkspaceId
+        ?? defaultProjectWorkspaceIdForProject(defaultProject);
+      const defaultExecutionWorkspaceMode = newIssueDefaults.executionWorkspaceId
+        ? "reuse_existing"
+        : (newIssueDefaults.executionWorkspaceMode ?? defaultExecutionWorkspaceModeForProject(defaultProject));
+      setTitle(newIssueDefaults.title ?? "");
+      setDescription(newIssueDefaults.description ?? "");
+      setStatus(newIssueDefaults.status ?? "todo");
+      setPriority(newIssueDefaults.priority ?? "");
+      setDeadline("");
+      setProjectId(defaultProjectId);
+      setProjectWorkspaceId(defaultProjectWorkspaceId);
+      setAssigneeValue(assigneeValueFromSelection(newIssueDefaults));
+      setAssigneeModelOverride("");
+      setAssigneeThinkingEffort("");
+      setAssigneeChrome(false);
+      setExecutionWorkspaceMode(defaultExecutionWorkspaceMode);
+      setSelectedExecutionWorkspaceId(newIssueDefaults.executionWorkspaceId ?? "");
+      executionWorkspaceDefaultProjectId.current = defaultProjectId || null;
+    } else if (newIssueDefaults.title) {
       setTitle(newIssueDefaults.title);
       setDescription(newIssueDefaults.description ?? "");
       setStatus(newIssueDefaults.status ?? "todo");
       setPriority(newIssueDefaults.priority ?? "");
+      setDeadline("");
       const defaultProjectId = newIssueDefaults.projectId ?? "";
       const defaultProject = orderedProjects.find((project) => project.id === defaultProjectId);
       setProjectId(defaultProjectId);
@@ -534,6 +561,7 @@ export function NewIssueDialog() {
       setDescription(draft.description);
       setStatus(draft.status || "todo");
       setPriority(draft.priority);
+      setDeadline(draft.deadline ?? "");
       setAssigneeValue(
         newIssueDefaults.assigneeAgentId || newIssueDefaults.assigneeUserId
           ? assigneeValueFromSelection(newIssueDefaults)
@@ -555,6 +583,7 @@ export function NewIssueDialog() {
       const defaultProject = orderedProjects.find((project) => project.id === defaultProjectId);
       setStatus(newIssueDefaults.status ?? "todo");
       setPriority(newIssueDefaults.priority ?? "");
+      setDeadline("");
       setProjectId(defaultProjectId);
       setProjectWorkspaceId(defaultProjectWorkspaceIdForProject(defaultProject));
       setAssigneeValue(assigneeValueFromSelection(newIssueDefaults));
@@ -599,6 +628,7 @@ export function NewIssueDialog() {
     setDescription("");
     setStatus("todo");
     setPriority("");
+    setDeadline("");
     setAssigneeValue("");
     setProjectId("");
     setProjectWorkspaceId("");
@@ -620,6 +650,7 @@ export function NewIssueDialog() {
     if (companyId === effectiveCompanyId) return;
     setDialogCompanyId(companyId);
     setAssigneeValue("");
+    setDeadline("");
     setProjectId("");
     setProjectWorkspaceId("");
     setAssigneeModelOverride("");
@@ -665,6 +696,7 @@ export function NewIssueDialog() {
       description: description.trim() || undefined,
       status,
       priority: priority || "medium",
+      ...(deadline ? { deadline } : {}),
       ...(selectedAssigneeAgentId ? { assigneeAgentId: selectedAssigneeAgentId } : {}),
       ...(selectedAssigneeUserId ? { assigneeUserId: selectedAssigneeUserId } : {}),
       ...(projectId ? { projectId } : {}),
@@ -1391,6 +1423,17 @@ export function NewIssueDialog() {
               ))}
             </PopoverContent>
           </Popover>
+
+          <div className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs">
+            <Calendar className="h-3 w-3 text-muted-foreground" />
+            <input
+              type="date"
+              className="w-28 bg-transparent outline-none"
+              value={deadline}
+              onChange={(event) => setDeadline(event.target.value)}
+              aria-label="Issue deadline"
+            />
+          </div>
 
           {/* Labels chip (placeholder) */}
           <button className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent/50 transition-colors text-muted-foreground">
